@@ -12,5 +12,6 @@ import { ParticipantModule } from 'src/participant/participant.module';
   ],
   controllers: [RoomController],
   providers: [RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}

@@ -5,13 +5,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { ParticipantModule } from './participant/participant.module';
 import { RoomModule } from './room/room.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb://localhost/coding-pal'),
+    MongooseModule.forRoot(
+      'mongodb+srv://sithumdashantha:x0T3fVsjz7DBBdsz@coding-pal.sxcpnkx.mongodb.net/',
+    ),
     ParticipantModule,
     RoomModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

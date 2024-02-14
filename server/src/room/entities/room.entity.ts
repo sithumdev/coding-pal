@@ -20,10 +20,9 @@ export class Room {
 
   @Prop({
     required: true,
-    type: mongoose.Types.ObjectId,
-    ref: Participant.name,
+    type: () => String,
   })
-  owner: Participant;
+  owner: string;
 
   @Prop({
     required: true,

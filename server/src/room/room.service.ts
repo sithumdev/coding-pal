@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Room, RoomDocument } from './entities/room.entity';
 import { Model } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-import { ParticipantService } from 'src/participant/participant.service';
-import { Participant } from 'src/participant/entities/participant.entity';
 import { CreateParticipantDto } from 'src/participant/dto/create-participant.dto';
+import { Participant } from 'src/participant/entities/participant.entity';
+import { ParticipantService } from 'src/participant/participant.service';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { Room, RoomDocument } from './entities/room.entity';
+import { LeaveRoomDto } from 'src/chat/dto/leave-room.dto';
 
 @Injectable()
 export class RoomService {
@@ -18,11 +18,12 @@ export class RoomService {
   ) {}
 
   async create(createRoomDto: CreateRoomDto): Promise<Room | HttpException> {
-    let owner: any;
+    let owner: Participant;
 
     try {
       const creatingOwner: CreateParticipantDto = {
         name: createRoomDto.owner,
+        socketID: createRoomDto.socketID,
       };
 
       owner = await this.participantService.create(creatingOwner);
@@ -32,9 +33,9 @@ export class RoomService {
 
     const newRoom = new this.roomRepo({
       ...createRoomDto,
-      participants: [owner],
+      participants: [],
       roomID: uuidv4(),
-      owner,
+      owner: owner.socketID,
     });
 
     return await newRoom.save();
@@ -43,26 +44,100 @@ export class RoomService {
   async addParticipant(
     createParticipantDto: CreateParticipantDto,
     roomID: string,
-  ): Promise<Room | HttpException> {
-    const createdParticipant =
-      await this.participantService.create(createParticipantDto);
-
-    if (!createdParticipant) {
-      return new HttpException(
-        'Joining participant failed',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
+  ): Promise<Participant | HttpException> {
     const room = await this.roomRepo.findOne({ roomID });
 
     if (!room) {
       return new HttpException('Room not found', HttpStatus.NOT_FOUND);
     }
 
-    room.participants.push(createdParticipant);
+    if (room.owner === createParticipantDto.socketID) {
+      // Owner has joined
 
-    return await room.save();
+      const owner = await this.participantService.findOne(
+        createParticipantDto.socketID,
+      );
+
+      room.participants.push(owner);
+
+      await room.save();
+
+      return owner;
+    } else {
+      const createdParticipant =
+        await this.participantService.create(createParticipantDto);
+
+      if (!createdParticipant) {
+        return new HttpException(
+          'Joining participant failed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      room.participants.push(createdParticipant);
+
+      await room.save();
+
+      return createdParticipant;
+    }
+  }
+
+  async handleDisconnectParticipant(socketID: string): Promise<void> {
+    const deletedParticipant = await this.participantService.remove(socketID);
+
+    if (deletedParticipant) {
+      const ownedRooms: Room[] = await this.roomRepo.find({ owner: socketID });
+
+      await Promise.all(
+        ownedRooms.map(async (room) => {
+          const foundRoom = await this.roomRepo.findById(room._id);
+
+          foundRoom.participants = foundRoom.participants.filter(
+            (participant) => participant.socketID !== socketID,
+          );
+
+          const updatedRoom = await foundRoom.save();
+
+          if (updatedRoom.participants.length === 0) {
+            await this.roomRepo.findByIdAndDelete(updatedRoom.id);
+          } else {
+            updatedRoom.owner = updatedRoom.participants[0].socketID;
+
+            await updatedRoom.save();
+          }
+        }),
+      );
+    }
+  }
+
+  async handleLeave(socketID: string, leaveRoomDto: LeaveRoomDto) {
+    const deletedParticipant = await this.participantService.remove(socketID);
+
+    if (deletedParticipant) {
+      const foundRoom = await this.roomRepo.findOne({
+        roomID: leaveRoomDto.roomID,
+      });
+
+      if (foundRoom) {
+        foundRoom.participants = foundRoom.participants.filter(
+          (participant) => participant.socketID !== socketID,
+        );
+
+        const updatedRoom = await foundRoom.save();
+
+        if (foundRoom.owner === socketID) {
+          if (updatedRoom.participants.length === 0) {
+            await this.roomRepo.findByIdAndDelete(updatedRoom.id);
+          } else {
+            updatedRoom.owner = updatedRoom.participants[0].socketID;
+
+            await updatedRoom.save();
+          }
+        }
+      }
+    }
+
+    return deletedParticipant;
   }
 
   findAll() {
@@ -89,13 +164,13 @@ export class RoomService {
     throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
   }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
-    console.log(updateRoomDto);
+  // update(id: number, updateRoomDto: UpdateRoomDto) {
+  //   console.log(updateRoomDto);
 
-    return `This action updates a #${id} room`;
-  }
+  //   return `This action updates a #${id} room`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} room`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} room`;
+  // }
 }
