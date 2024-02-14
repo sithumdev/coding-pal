@@ -11,19 +11,6 @@ export class RoomController {
     return this.roomService.create(createRoomDto);
   }
 
-  // @Post(':roomID/participant')
-  // addPartcipant(
-  //   @Body() createParticipantDto: CreateParticipantDto,
-  //   @Param('roomID') roomID: string,
-  // ) {
-  //   return this.roomService.addParticipant(createParticipantDto, roomID);
-  // }
-
-  @Get()
-  findAll() {
-    return this.roomService.findAll();
-  }
-
   @Get(':roomID/participant')
   findAllParticipantsInRoom(@Param('roomID') roomID: string) {
     return this.roomService.findAllParticipants(roomID);
@@ -34,10 +21,10 @@ export class RoomController {
   //   return this.participantService.findAll();
   // }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.roomService.findOne(id);
-  // }
+  @Get(':roomID')
+  findOne(@Param('roomID') roomID: string) {
+    return this.roomService.findOne(roomID);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {

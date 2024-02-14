@@ -155,7 +155,10 @@ export class RoomService {
   }
 
   async findOne(roomID: string) {
-    const foundRoom = await this.roomRepo.findOne({ roomID }).exec();
+    const foundRoom = await this.roomRepo
+      .findOne({ roomID })
+      .populate('participants')
+      .exec();
 
     if (foundRoom) {
       return foundRoom;
