@@ -11,4 +11,7 @@ export class CreateRoomDto {
 
   @IsString()
   readonly owner: string;
+
+  @IsString()
+  readonly socketID: string;
 }

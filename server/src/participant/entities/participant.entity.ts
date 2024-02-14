@@ -9,6 +9,9 @@ export class Participant {
 
   @Prop({ required: true, type: () => String })
   name: string;
+
+  @Prop({ required: true, type: () => String, unique: true })
+  socketID: string;
 }
 
 export const ParticipantSchema = SchemaFactory.createForClass(Participant);

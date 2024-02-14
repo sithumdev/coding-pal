@@ -30,7 +30,9 @@ export class ParticipantService {
   }
 
   async findOne(id: string) {
-    const foundParticipant = await this.participantRepo.findById(id).exec();
+    const foundParticipant = await this.participantRepo
+      .findOne({ socketID: id })
+      .exec();
 
     if (foundParticipant) {
       return foundParticipant;
@@ -45,7 +47,7 @@ export class ParticipantService {
     return `This action updates a #${id} participant`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} participant`;
+  async remove(socketID: string) {
+    return await this.participantRepo.findOneAndDelete({ socketID });
   }
 }

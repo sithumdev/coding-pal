@@ -4,4 +4,7 @@ export class CreateParticipantDto {
   @IsString()
   @MaxLength(30)
   readonly name: string;
+
+  @IsString()
+  readonly socketID: string;
 }
