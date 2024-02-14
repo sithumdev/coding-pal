@@ -1,22 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { UpdateParticipantDto } from './dto/update-participant.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  Participant,
+  ParticipantDocument,
+} from './entities/participant.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ParticipantService {
-  create(createParticipantDto: CreateParticipantDto) {
-    return 'This action adds a new participant';
+  constructor(
+    @InjectModel(Participant.name)
+    private readonly participantRepo: Model<ParticipantDocument>,
+  ) {}
+
+  async create(
+    createParticipantDto: CreateParticipantDto,
+  ): Promise<Participant> {
+    const createdParticipant = new this.participantRepo({
+      ...createParticipantDto,
+    });
+
+    return await createdParticipant.save();
   }
 
-  findAll() {
-    return `This action returns all participant`;
+  async findAll(): Promise<Participant[]> {
+    return await this.participantRepo.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} participant`;
+  async findOne(id: string) {
+    const foundParticipant = await this.participantRepo.findById(id).exec();
+
+    if (foundParticipant) {
+      return foundParticipant;
+    }
+
+    throw new HttpException('Participant not found', HttpStatus.NOT_FOUND);
   }
 
   update(id: number, updateParticipantDto: UpdateParticipantDto) {
+    console.log(updateParticipantDto);
+
     return `This action updates a #${id} participant`;
   }
 
