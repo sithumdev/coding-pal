@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ParticipantService } from './participant.service';
-import { ParticipantController } from './participant.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Participant, ParticipantSchema } from './entities/participant.entity';
 
 @Module({
-  controllers: [ParticipantController],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Participant.name, schema: ParticipantSchema },
+    ]),
+  ],
   providers: [ParticipantService],
 })
 export class ParticipantModule {}
