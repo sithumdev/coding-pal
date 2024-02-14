@@ -10,5 +10,6 @@ import { Participant, ParticipantSchema } from './entities/participant.entity';
     ]),
   ],
   providers: [ParticipantService],
+  exports: [ParticipantService],
 })
 export class ParticipantModule {}
