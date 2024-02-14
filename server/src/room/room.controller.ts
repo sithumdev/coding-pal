@@ -11,10 +11,10 @@ export class RoomController {
     return this.roomService.create(createRoomDto);
   }
 
-  @Get(':roomID/participant')
-  findAllParticipantsInRoom(@Param('roomID') roomID: string) {
-    return this.roomService.findAllParticipants(roomID);
-  }
+  // @Get(':roomID/participant')
+  // findAllParticipantsInRoom(@Param('roomID') roomID: string) {
+  //   return this.roomService.findAllParticipants(roomID);
+  // }
 
   // @Get('participant')
   // findAllParticipants() {
