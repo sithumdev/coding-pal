@@ -13,6 +13,7 @@ import { RoomService } from 'src/room/room.service';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { CreateParticipantDto } from 'src/participant/dto/create-participant.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
+import { TypeContentDto } from './dto/type-content.dto';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway
@@ -77,5 +78,15 @@ export class ChatGateway
     client.leave(message.roomID);
 
     this.server.to(message.roomID).emit('palLeft', leftParticipant);
+  }
+
+  @SubscribeMessage('type')
+  async typeContent(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() message: TypeContentDto,
+  ) {
+    // this.server.to(message.roomID).emit('palTyped', message);
+
+    client.broadcast.to(message.roomID).emit('palTyped', message);
   }
 }
