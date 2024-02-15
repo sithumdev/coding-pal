@@ -24,6 +24,7 @@ export class RoomService {
       const creatingOwner: CreateParticipantDto = {
         name: createRoomDto.owner,
         socketID: createRoomDto.socketID,
+        github: createRoomDto.github,
       };
 
       owner = await this.participantService.create(creatingOwner);
@@ -44,7 +45,7 @@ export class RoomService {
   async addParticipant(
     createParticipantDto: CreateParticipantDto,
     roomID: string,
-  ): Promise<Participant | HttpException> {
+  ): Promise<Room | HttpException> {
     const room = await this.roomRepo.findOne({ roomID });
 
     if (!room) {
@@ -60,9 +61,7 @@ export class RoomService {
 
       room.participants.push(owner);
 
-      await room.save();
-
-      return owner;
+      return await room.save();
     } else {
       const createdParticipant =
         await this.participantService.create(createParticipantDto);
@@ -76,9 +75,7 @@ export class RoomService {
 
       room.participants.push(createdParticipant);
 
-      await room.save();
-
-      return createdParticipant;
+      return room.save();
     }
   }
 
@@ -155,7 +152,10 @@ export class RoomService {
   }
 
   async findOne(roomID: string) {
-    const foundRoom = await this.roomRepo.findOne({ roomID }).exec();
+    const foundRoom = await this.roomRepo
+      .findOne({ roomID })
+      .populate('participants')
+      .exec();
 
     if (foundRoom) {
       return foundRoom;

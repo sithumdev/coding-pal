@@ -13,8 +13,9 @@ import { RoomService } from 'src/room/room.service';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { CreateParticipantDto } from 'src/participant/dto/create-participant.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
+import { TypeContentDto } from './dto/type-content.dto';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -43,19 +44,22 @@ export class ChatGateway
     @MessageBody() message: JoinRoomDto,
   ) {
     const creatingParticipant: CreateParticipantDto = {
+      github: message.github,
       name: message.name,
       socketID: client.id,
     };
 
     try {
-      const participant = await this.roomService.addParticipant(
+      await this.roomService.addParticipant(
         creatingParticipant,
         message.roomID,
       );
 
       client.join(message.roomID);
 
-      this.server.to(message.roomID).emit('palJoined', participant);
+      this.server
+        .to(message.roomID)
+        .emit('palJoined', { ...creatingParticipant, roomID: message.roomID });
     } catch (e) {
       console.log(e);
     }
@@ -74,5 +78,15 @@ export class ChatGateway
     client.leave(message.roomID);
 
     this.server.to(message.roomID).emit('palLeft', leftParticipant);
+  }
+
+  @SubscribeMessage('type')
+  async typeContent(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() message: TypeContentDto,
+  ) {
+    // this.server.to(message.roomID).emit('palTyped', message);
+
+    client.broadcast.to(message.roomID).emit('palTyped', message);
   }
 }

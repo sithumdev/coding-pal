@@ -5,5 +5,8 @@ export class JoinRoomDto {
   readonly name: string;
 
   @IsString()
+  readonly github: string;
+
+  @IsString()
   readonly roomID: string;
 }

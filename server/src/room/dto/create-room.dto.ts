@@ -6,6 +6,9 @@ export class CreateRoomDto {
   @MaxLength(20)
   readonly name: string;
 
+  @IsString()
+  readonly github: string;
+
   @IsEnum(ProgrammingLanguage)
   readonly language: ProgrammingLanguage;
 

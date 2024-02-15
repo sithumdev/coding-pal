@@ -6,5 +6,8 @@ export class CreateParticipantDto {
   readonly name: string;
 
   @IsString()
+  readonly github: string;
+
+  @IsString()
   readonly socketID: string;
 }

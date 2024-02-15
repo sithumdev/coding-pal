@@ -10,6 +10,9 @@ export class Participant {
   @Prop({ required: true, type: () => String })
   name: string;
 
+  @Prop({ required: true, type: () => String })
+  github: string;
+
   @Prop({ required: true, type: () => String, unique: true })
   socketID: string;
 }
