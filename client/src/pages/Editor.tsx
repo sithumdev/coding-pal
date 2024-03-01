@@ -25,10 +25,11 @@ export default function Editor() {
   const navigate = useNavigate();
 
   const [room, setRoom] = useState<Room>();
+  const [content, setContent] = useState<string>();
 
   const socket = useContext<Socket>(SocketContext);
 
-  let { roomID } = useParams();
+  const { roomID } = useParams();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
 
@@ -42,7 +43,7 @@ export default function Editor() {
     const provider: WebsocketProvider = new WebsocketProvider(
       SOCKET_URL,
       roomID || "",
-      doc,
+      doc
     );
     const type = doc.getText("monaco");
 
@@ -50,7 +51,7 @@ export default function Editor() {
     const binding = new MonacoBinding(
       type,
       editorRef.current!.getModel()!,
-      new Set([editorRef.current!]),
+      new Set([editorRef.current!])
     );
     console.log(binding, provider);
   }
@@ -72,6 +73,7 @@ export default function Editor() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     socket.on("palJoined", (_data) => {
       if (roomID) {
         getRoomInfo(roomID);
@@ -79,14 +81,19 @@ export default function Editor() {
     });
 
     socket.on("palLeft", (data) => {
-      console.log(data);
-
       if (roomID) {
         if (data && data.socketID === socket.id) {
           navigate("");
         } else {
           getRoomInfo(roomID);
         }
+      }
+    });
+
+    socket.on("palTyped", (data) => {
+      if (data) {
+        console.log("PAL Typed ", data);
+        setContent(data.content);
       }
     });
 
@@ -104,9 +111,9 @@ export default function Editor() {
     navigate("/");
   }
 
-  function handleEditorChange(value: any, event: any) {
-    console.log("here is the current model value:", value);
-    console.log("event:", event);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  function handleEditorChange(value: any, _event: any) {
+    socket.emit("type", { roomID, content: value });
   }
 
   return (
@@ -119,6 +126,7 @@ export default function Editor() {
           theme="vs-light"
           onMount={handleEditorDidMount}
           onChange={handleEditorChange}
+          value={content}
         />
       </div>
       <div className="col-span-12 p-5 lg:col-span-4">
@@ -132,7 +140,13 @@ export default function Editor() {
               room.participants.map((participant) => (
                 <HoverCard key={participant._id}>
                   <HoverCardTrigger asChild>
-                    <Avatar>
+                    <Avatar
+                      className={
+                        participant.socketID === socket.id
+                          ? "border-2 border-blue-500"
+                          : ""
+                      }
+                    >
                       <AvatarImage
                         src={`https://github.com/${participant.github}.png`}
                         alt="@shadcn"
