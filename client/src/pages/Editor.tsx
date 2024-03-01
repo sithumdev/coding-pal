@@ -25,6 +25,7 @@ export default function Editor() {
   const navigate = useNavigate();
 
   const [room, setRoom] = useState<Room>();
+  const [content, setContent] = useState<string>();
 
   const socket = useContext<Socket>(SocketContext);
 
@@ -79,14 +80,19 @@ export default function Editor() {
     });
 
     socket.on("palLeft", (data) => {
-      console.log(data);
-
       if (roomID) {
         if (data && data.socketID === socket.id) {
           navigate("");
         } else {
           getRoomInfo(roomID);
         }
+      }
+    });
+
+    socket.on("palTyped", (data) => {
+      if (data) {
+        console.log("PAL Typed ", data);
+        setContent(data.content);
       }
     });
 
@@ -104,9 +110,8 @@ export default function Editor() {
     navigate("/");
   }
 
-  function handleEditorChange(value: any, event: any) {
-    console.log("here is the current model value:", value);
-    console.log("event:", event);
+  function handleEditorChange(value: any, _event: any) {
+    socket.emit("type", { roomID, content: value });
   }
 
   return (
@@ -119,6 +124,7 @@ export default function Editor() {
           theme="vs-light"
           onMount={handleEditorDidMount}
           onChange={handleEditorChange}
+          value={content}
         />
       </div>
       <div className="col-span-12 p-5 lg:col-span-4">
@@ -132,7 +138,13 @@ export default function Editor() {
               room.participants.map((participant) => (
                 <HoverCard key={participant._id}>
                   <HoverCardTrigger asChild>
-                    <Avatar>
+                    <Avatar
+                      className={
+                        participant.socketID === socket.id
+                          ? "border-2 border-blue-500"
+                          : ""
+                      }
+                    >
                       <AvatarImage
                         src={`https://github.com/${participant.github}.png`}
                         alt="@shadcn"
