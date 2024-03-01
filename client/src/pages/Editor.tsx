@@ -29,7 +29,7 @@ export default function Editor() {
 
   const socket = useContext<Socket>(SocketContext);
 
-  let { roomID } = useParams();
+  const { roomID } = useParams();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
 
@@ -43,7 +43,7 @@ export default function Editor() {
     const provider: WebsocketProvider = new WebsocketProvider(
       SOCKET_URL,
       roomID || "",
-      doc,
+      doc
     );
     const type = doc.getText("monaco");
 
@@ -51,7 +51,7 @@ export default function Editor() {
     const binding = new MonacoBinding(
       type,
       editorRef.current!.getModel()!,
-      new Set([editorRef.current!]),
+      new Set([editorRef.current!])
     );
     console.log(binding, provider);
   }
@@ -73,6 +73,7 @@ export default function Editor() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     socket.on("palJoined", (_data) => {
       if (roomID) {
         getRoomInfo(roomID);
@@ -110,6 +111,7 @@ export default function Editor() {
     navigate("/");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   function handleEditorChange(value: any, _event: any) {
     socket.emit("type", { roomID, content: value });
   }
