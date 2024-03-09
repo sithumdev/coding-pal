@@ -16,9 +16,12 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import {Share2} from "lucide-react";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 export default function Editor() {
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [room, setRoom] = useState<Room>();
   const [content, setContent] = useState<string>();
@@ -54,6 +57,9 @@ export default function Editor() {
   }
 
   async function getRoomInfo(roomID: string) {
+
+    setLoading(true);
+
     const response = await getRoomDetails(roomID);
 
     if (
@@ -66,7 +72,13 @@ export default function Editor() {
       navigate("/");
     } else {
       setRoom(response);
+
+      if (response.codeSnippet) {
+        setContent(response.codeSnippet);
+      }
     }
+
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -130,81 +142,101 @@ export default function Editor() {
 
   return (
     <section className="grid min-h-screen w-full grid-cols-12  p-1 lg:p-5">
-      <div className="order-2 col-span-12 rounded-md border p-2 lg:order-1 lg:col-span-8">
-        <MonacoEditor
-          height="100%"
-          language="javascript"
-          defaultValue={"// your code here"}
-          theme="vs-light"
-          onMount={handleEditorDidMount}
-          onChange={handleEditorChange}
-          value={content}
-        />
-      </div>
-      <div className="col-span-12 p-5 lg:col-span-4">
-        <Badge>{roomID}</Badge>
-        <h2 className="mt-2 text-2xl">{room?.name}</h2>
+      {loading ? (
+          <Skeleton className="rder-2 col-span-12 rounded-md border p-2 lg:order-1 lg:col-span-8" />
+      ) : (
+          <div className="order-2 col-span-12 rounded-md border p-2 lg:order-1 lg:col-span-8">
+            <MonacoEditor
+                height="100%"
+                language="javascript"
+                defaultValue={"// your code here"}
+                theme="vs-light"
+                onMount={handleEditorDidMount}
+                onChange={handleEditorChange}
+                value={content}
+            />
+          </div>
+      )}
 
-        <div className=" mt-2 rounded-md border p-2 lg:mt-6">
+      <div className="col-span-12 p-5 lg:col-span-4">
+
+        {loading ? (
+            <Skeleton className="w-full rounded-md border h-5" />
+        ): (<Badge>{roomID}</Badge>)}
+
+        {loading ? (
+            <Skeleton className="mt-2 w-24 rounded-md h-8" />
+        ): (<h2 className="mt-2 text-2xl">{room?.name}</h2>)}
+
+
+        {loading ? (
+            <Skeleton className="mt-2 w-full rounded-md h-28" />
+        ): (<div className=" mt-2 rounded-md border p-2 lg:mt-6">
           <p className="mb-2 text-sm">Participants</p>
           <div className="flex flex-wrap gap-1">
             {room &&
-              room.participants.map((participant) => (
-                <HoverCard key={participant._id}>
-                  <HoverCardTrigger asChild>
-                    <Avatar
-                      className={
-                        participant.socketID === socket.id
-                          ? "border-2 border-blue-500"
-                          : ""
-                      }
-                    >
-                      <AvatarImage
-                        src={`https://github.com/${participant.github}.png`}
-                        alt="@shadcn"
-                      />
-                      <AvatarFallback>{participant.name}</AvatarFallback>
-                    </Avatar>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80">
-                    <div className="flex flex-col space-y-2">
-                      <Avatar>
-                        <AvatarImage
-                          src={`https://github.com/${participant.github}.png`}
-                          alt="@shadcn"
-                        />
-                        <AvatarFallback>{participant.name}</AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-semibold">
-                          @{participant.github}
-                        </h4>
-                        <p className="text-lg">{participant.name}</p>
-                      </div>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-              ))}
+                room.participants.map((participant) => (
+                    <HoverCard key={participant._id}>
+                      <HoverCardTrigger asChild>
+                        <Avatar
+                            className={
+                              participant.socketID === socket.id
+                                  ? "border-2 border-blue-500"
+                                  : ""
+                            }
+                        >
+                          <AvatarImage
+                              src={`https://github.com/${participant.github}.png`}
+                              alt="@shadcn"
+                          />
+                          <AvatarFallback>{participant.name}</AvatarFallback>
+                        </Avatar>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <div className="flex flex-col space-y-2">
+                          <Avatar>
+                            <AvatarImage
+                                src={`https://github.com/${participant.github}.png`}
+                                alt="@shadcn"
+                            />
+                            <AvatarFallback>{participant.name}</AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-semibold">
+                              @{participant.github}
+                            </h4>
+                            <p className="text-lg">{participant.name}</p>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                ))}
           </div>
-        </div>
+        </div>)}
 
-        <div className="flex justify-end">
+        {loading ? (
+            <div className='flex justify-end'>
+              <Skeleton className="mt-5 w-48 rounded-md h-10" />
+            </div>
+
+        ): (<div className="flex justify-end">
           <Button
               variant="outline"
-              className="mt-5"
+              className="mt-5 mr-3"
               onClick={() => share()}
           >
-            <Share2  className="mr-2 h-4 w-4" />
+            <Share2 className="mr-2 h-4 w-4"/>
             Share
           </Button>
           <Button
-            className="mt-5"
-            variant="destructive"
-            onClick={() => leaveRoom()}
+              className="mt-5"
+              variant="destructive"
+              onClick={() => leaveRoom()}
           >
             Leave Room
           </Button>
-        </div>
+        </div>)}
+
       </div>
     </section>
   );

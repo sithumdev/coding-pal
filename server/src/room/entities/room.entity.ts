@@ -18,6 +18,9 @@ export class Room {
   @Prop({ enum: ProgrammingLanguage, default: ProgrammingLanguage.JAVASCRIPT })
   language: ProgrammingLanguage;
 
+  @Prop({ required: false })
+  codeSnippet: string;
+
   @Prop({
     required: true,
     type: () => String,

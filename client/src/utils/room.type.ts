@@ -16,4 +16,5 @@ export interface Room {
   participants: Participant[];
   createdAt: string;
   updatedAt: string;
+  codeSnippet: string;
 }
