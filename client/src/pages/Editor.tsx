@@ -1,9 +1,6 @@
 import { editor } from "monaco-editor";
-import { useContext, useEffect, useRef, useState } from "react";
-import { WebsocketProvider } from "y-websocket";
-import { MonacoBinding } from "y-monaco";
+import { useContext, useEffect, useState } from "react";
 import { Editor as MonacoEditor } from "@monaco-editor/react";
-import * as Y from "yjs";
 import { SocketContext } from "@/context/socket-context";
 import { Socket } from "socket.io-client";
 import { useNavigate, useParams } from "react-router-dom";
@@ -18,8 +15,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-
-const SOCKET_URL = import.meta.env.VITE_SERVER_WS_URL;
+import {Share2} from "lucide-react";
 
 export default function Editor() {
   const navigate = useNavigate();
@@ -31,29 +27,30 @@ export default function Editor() {
 
   const { roomID } = useParams();
 
-  const editorRef = useRef<editor.IStandaloneCodeEditor>();
+  // const editorRef = useRef<editor.IStandaloneCodeEditor>();
 
   function handleEditorDidMount(editor: editor.IStandaloneCodeEditor) {
-    editorRef.current = editor;
+    console.log(editor);
+    // editorRef.current = editor;
 
     // Initialize yjs
-    const doc = new Y.Doc(); // collection of shared objects
+    // const doc = new Y.Doc(); // collection of shared objects
 
     // Connect to peers with Web RTC
-    const provider: WebsocketProvider = new WebsocketProvider(
-      SOCKET_URL,
-      roomID || "",
-      doc
-    );
-    const type = doc.getText("monaco");
+    // const provider: WebsocketProvider = new WebsocketProvider(
+    //   SOCKET_URL,
+    //   roomID || "",
+    //   doc
+    // );
+    // const type = doc.getText("monaco");
 
     // Bind yjs doc to Manaco editor
-    const binding = new MonacoBinding(
-      type,
-      editorRef.current!.getModel()!,
-      new Set([editorRef.current!])
-    );
-    console.log(binding, provider);
+    // const binding = new MonacoBinding(
+    //   type,
+    //   editorRef.current!.getModel()!,
+    //   new Set([editorRef.current!])
+    // );
+    // console.log(binding, provider);
   }
 
   async function getRoomInfo(roomID: string) {
@@ -109,6 +106,21 @@ export default function Editor() {
   async function leaveRoom() {
     socket.emit("leave", { roomID });
     navigate("/");
+  }
+
+  async function share() {
+    await fetch(`${import.meta.env.VITE_SERVER_URL}/share`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({roomID})
+    })
+        .catch(() => {
+          toast("Something went wrong", {
+            description: `Internal server error.`,
+          });
+        });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
@@ -177,6 +189,14 @@ export default function Editor() {
         </div>
 
         <div className="flex justify-end">
+          <Button
+              variant="outline"
+              className="mt-5"
+              onClick={() => share()}
+          >
+            <Share2  className="mr-2 h-4 w-4" />
+            Share
+          </Button>
           <Button
             className="mt-5"
             variant="destructive"
