@@ -14,8 +14,9 @@ import { JoinRoomDto } from './dto/join-room.dto';
 import { CreateParticipantDto } from 'src/participant/dto/create-participant.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
 import { TypeContentDto } from './dto/type-content.dto';
+import {RedisIoAdapter} from "../adapters/redis.adapter";
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, adapter: RedisIoAdapter, })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
