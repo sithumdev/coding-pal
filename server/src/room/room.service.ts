@@ -37,7 +37,7 @@ export class RoomService {
       participants: [],
       roomID: uuidv4(),
       owner: owner.socketID,
-      codeSnippet: "// your code here"
+      codeSnippet: '// your code here',
     });
 
     return await newRoom.save();

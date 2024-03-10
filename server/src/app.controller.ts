@@ -16,6 +16,7 @@ export class AppController {
 
   @Post('share')
   makeRoomShareable(@Body() shareDto: ShareDto): string {
-    return this.appService.shareRoom(shareDto);
+    this.appService.shareRoom(shareDto);
+    return 'Not Implemented';
   }
 }
