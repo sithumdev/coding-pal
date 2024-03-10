@@ -37,9 +37,14 @@ export class RoomService {
       participants: [],
       roomID: uuidv4(),
       owner: owner.socketID,
+      codeSnippet: '// your code here',
     });
 
     return await newRoom.save();
+  }
+
+  async updateCodeSnippet(roomID: string, codeSnippet: string) {
+    return this.roomRepo.findOneAndUpdate({roomID}, {codeSnippet}, {upsert: true, new: true});
   }
 
   async addParticipant(
@@ -137,10 +142,6 @@ export class RoomService {
     return deletedParticipant;
   }
 
-  findAll() {
-    return `This action returns all room`;
-  }
-
   async findAllParticipants(roomID: string) {
     return await this.roomRepo
       .findOne({ roomID })
@@ -163,14 +164,4 @@ export class RoomService {
 
     throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
   }
-
-  // update(id: number, updateRoomDto: UpdateRoomDto) {
-  //   console.log(updateRoomDto);
-
-  //   return `This action updates a #${id} room`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} room`;
-  // }
 }

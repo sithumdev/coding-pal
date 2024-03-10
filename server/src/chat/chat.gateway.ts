@@ -30,8 +30,8 @@ export class ChatGateway
 
     console.log(`Client connected ${client.id}`);
   }
-  handleDisconnect(client: Socket) {
-    this.roomService.handleDisconnectParticipant(client.id);
+  async handleDisconnect(client: Socket) {
+    await this.roomService.handleDisconnectParticipant(client.id);
     console.log(`Client disconnected ${client.id}`);
   }
 
@@ -88,5 +88,9 @@ export class ChatGateway
     // this.server.to(message.roomID).emit('palTyped', message);
 
     client.broadcast.to(message.roomID).emit('palTyped', message);
+
+    this.roomService.updateCodeSnippet(message.roomID, message.content)
+        .then(() => console.log('Code snippet updated successfully'))
+        .catch(error => console.error('Failed to update code snippet:', error));
   }
 }

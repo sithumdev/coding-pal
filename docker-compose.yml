@@ -1,0 +1,26 @@
+version: "3.0"
+
+services:
+
+  haproxy:
+    image: haproxytech/haproxy-alpine
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro
+    depends_on:
+      - server1
+      - server2
+      - server3
+
+  server1:
+    image: coding-pal:1.4-alpha
+#    restart: always
+
+  server2:
+    image: coding-pal:1.4-alpha
+    restart: always
+
+  server3:
+    image: coding-pal:1.4-alpha
+    restart: always
